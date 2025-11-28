@@ -1,6 +1,6 @@
 // src/routes/auth.routes.ts
 import { Router } from 'express';
-import { prisma } from '../prisma';
+import { prisma } from '../utils/prisma';
 import { createAuditLog } from '../utils/auditLog';
 import { ActionType, EntityType } from '@prisma/client';
 
