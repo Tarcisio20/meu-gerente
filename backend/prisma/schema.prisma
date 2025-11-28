@@ -57,6 +57,12 @@ enum ActionType {
   LOGOUT
 }
 
+// 👇 novo enum para provedores de login
+enum AuthProvider {
+  GOOGLE
+  GITHUB
+}
+
 // ===== Models =====
 
 model User {
@@ -72,6 +78,9 @@ model User {
   categories   Category[]
   transactions Transaction[]
   auditLogs    AuditLog[]
+
+  // 👇 relações para login social
+  authAccounts AuthAccount[]
 }
 
 model Account {
@@ -141,4 +150,20 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   user User? @relation(fields: [userId], references: [id])
+}
+
+// 👇 nova tabela para login social (Google / GitHub)
+model AuthAccount {
+  id                String       @id @default(uuid()) @db.Char(36)
+  userId            String       @db.Char(36)
+  provider          AuthProvider
+  providerAccountId String // id do usuário no provedor (sub do Google, id do GitHub)
+  accessToken       String? // opcional
+  refreshToken      String? // opcional
+  expiresAt         DateTime? // opcional
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
 }
