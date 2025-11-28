@@ -18,60 +18,9 @@ import { Separator } from "@/components/ui/separator";
 import { Github, Mail, Eye, EyeOff } from "lucide-react";
 import { ModeToggle } from "@/app/components/toggle-mode";
 
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { login } from "@/app/service/auth";
-
-// schema de login: aceita e-mail OU usuário (slug)
-const loginSchema = z.object({
-  login: z
-    .string()
-    .min(1, "Informe seu e-mail ou usuário")
-    .refine(
-      (value) =>
-        /\S+@\S+\.\S+/.test(value) || /^[a-zA-Z0-9._-]+$/.test(value),
-      {
-        message:
-          "Use um e-mail válido ou um usuário (letras, números, . _ -).",
-      }
-    ),
-  password: z
-    .string()
-    .min(6, "A senha deve ter pelo menos 6 caracteres"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
-
-export default function LoginForm() {
+export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-  });
-
-  const onSubmit = async (data: LoginFormData) => {
-    try {
-      const response = await login({  email: data.login, password: data.password })
-      if(!response.success){
-        toast.error(response.message || "Erro ao fazer login. ER-04")
-        return
-      }
-
-      toast.success(response.message || "Seja bem vindo!")
-      
-      return
-
-    }catch(error){
-      toast.error("Erro ao fazer login. ER-01")
-      return
-    }
-  };
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-background relative px-4">
@@ -94,37 +43,53 @@ export default function LoginForm() {
           />
         </div>
 
-        {/* Formulário */}
+        {/* Formulário de registro (apenas visual) */}
         <Card className="w-full shadow-lg border-border">
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form>
             <CardHeader className="space-y-2">
               <CardTitle className="text-2xl font-semibold tracking-tight">
-                Entrar
+                Criar conta
               </CardTitle>
               <CardDescription>
-                Acesse sua conta para gerenciar suas finanças.
+                Preencha os dados abaixo para se cadastrar no Meu Gerente.
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {/* Login (e-mail ou usuário) */}
+              {/* Nome completo */}
               <div className="space-y-2">
-                <Label htmlFor="login">E-mail ou usuário</Label>
+                <Label htmlFor="name">Nome completo</Label>
                 <Input
-                  id="login"
+                  id="name"
                   type="text"
-                  placeholder="seuemail@exemplo.com ou seu_usuario"
-                  autoComplete="username"
-                  {...register("login")}
+                  placeholder="Seu nome completo"
+                  autoComplete="name"
                 />
-                {errors.login && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.login.message}
-                  </p>
-                )}
               </div>
 
-              {/* Senha + mostrar/ocultar */}
+              {/* E-mail */}
+              <div className="space-y-2">
+                <Label htmlFor="email">E-mail</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seuemail@exemplo.com"
+                  autoComplete="email"
+                />
+              </div>
+
+              {/* Usuário (slug) */}
+              <div className="space-y-2">
+                <Label htmlFor="username">Usuário</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="seu_usuario"
+                  autoComplete="username"
+                />
+              </div>
+
+              {/* Senha */}
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
                 <div className="relative">
@@ -132,9 +97,8 @@ export default function LoginForm() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     className="pr-10"
-                    {...register("password")}
                   />
 
                   <button
@@ -150,25 +114,47 @@ export default function LoginForm() {
                     )}
                   </button>
                 </div>
+              </div>
 
-                {errors.password && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.password.message}
-                  </p>
-                )}
+              {/* Confirmar senha */}
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirmar senha</Label>
+                <div className="relative">
+                  <Input
+                    id="confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    className="pr-10"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowConfirmPassword((prev) => !prev)
+                    }
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground cursor-pointer"
+                    aria-label={
+                      showConfirmPassword
+                        ? "Ocultar senha"
+                        : "Mostrar senha"
+                    }
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <Button
                 type="submit"
                 className="w-full mt-2 cursor-pointer"
-                disabled={isSubmitting}
               >
-                {isSubmitting ? "Entrando..." : "Entrar"}
+                Registrar
               </Button>
-
-              <div className="text-xs text-muted-foreground text-right mt-1 cursor-pointer hover:underline">
-                Esqueci minha senha
-              </div>
 
               {/* Separador */}
               <div className="flex items-center gap-2 py-2">
@@ -179,7 +165,7 @@ export default function LoginForm() {
                 <Separator className="flex-1" />
               </div>
 
-              {/* Login social */}
+              {/* Registro com login social (mesmo padrão visual) */}
               <div className="flex flex-col gap-2">
                 <Button
                   type="button"
@@ -187,7 +173,7 @@ export default function LoginForm() {
                   className="w-full justify-center gap-2 cursor-pointer"
                 >
                   <Mail className="w-4 h-4" />
-                  Logar com o Google
+                  Registrar com o Google
                 </Button>
                 <Button
                   type="button"
@@ -195,19 +181,19 @@ export default function LoginForm() {
                   className="w-full justify-center gap-2 cursor-pointer"
                 >
                   <Github className="w-4 h-4" />
-                  Logar com o Github
+                  Registrar com o Github
                 </Button>
               </div>
             </CardContent>
 
             <CardFooter className="justify-center text-xs text-muted-foreground">
-              Não tem conta?
-              <button
+              Já tem conta?
+              <a
                 className="text-primary hover:underline ml-1 cursor-pointer"
-                type="button"
+                href="/login"
               >
-                Criar conta
-              </button>
+                Entrar
+              </a>
             </CardFooter>
           </form>
         </Card>
