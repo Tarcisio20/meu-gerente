@@ -18,9 +18,52 @@ import { Separator } from "@/components/ui/separator";
 import { Github, Mail, Eye, EyeOff } from "lucide-react";
 import { ModeToggle } from "@/app/components/toggle-mode";
 
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { register as registerApi } from "@/app/service/auth";
+
+const registerSchema = z.object({
+  name: z.string().min(3, { message: "O nome deve ter pelo menos 3 caracteres" }),
+  email: z.email(),
+  password: z.string().min(6, { message: "A senha deve ter pelo menos 6 caracteres" }),
+  confirmPassword: z
+    .string()
+    .min(6, { message: "A confirmação deve ter pelo menos 6 caracteres" }),
+})
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não conferem",
+    path: ["confirmPassword"], // 👈 erro vai aparecer no campo de confirmação
+  })
+
+type RegisterFormData = z.infer<typeof registerSchema>
+
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const onSubmit = async (data: RegisterFormData) => {
+    try{
+      const response = await registerApi({  name: data.name, email: data.email, password: data.password })
+      if(!response.success){
+        toast.error(response.message || "Erro ao criar conta. ER-03")
+        return
+      }
+
+    }catch(error){
+      toast.error("Erro ao criar conta. ER-03")
+      return
+    }
+  };
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-background relative px-4">
@@ -45,7 +88,7 @@ export default function RegisterForm() {
 
         {/* Formulário de registro (apenas visual) */}
         <Card className="w-full shadow-lg border-border">
-          <form>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <CardHeader className="space-y-2">
               <CardTitle className="text-2xl font-semibold tracking-tight">
                 Criar conta
@@ -64,7 +107,13 @@ export default function RegisterForm() {
                   type="text"
                   placeholder="Seu nome completo"
                   autoComplete="name"
+                  {...register("name")}
                 />
+                {errors.name && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
 
               {/* E-mail */}
@@ -75,18 +124,13 @@ export default function RegisterForm() {
                   type="email"
                   placeholder="seuemail@exemplo.com"
                   autoComplete="email"
+                  {...register("email")}
                 />
-              </div>
-
-              {/* Usuário (slug) */}
-              <div className="space-y-2">
-                <Label htmlFor="username">Usuário</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="seu_usuario"
-                  autoComplete="username"
-                />
+                {errors.email && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               {/* Senha */}
@@ -99,6 +143,7 @@ export default function RegisterForm() {
                     placeholder="••••••••"
                     autoComplete="new-password"
                     className="pr-10"
+                    {...register("password")}
                   />
 
                   <button
@@ -114,6 +159,11 @@ export default function RegisterForm() {
                     )}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
               {/* Confirmar senha */}
@@ -126,6 +176,7 @@ export default function RegisterForm() {
                     placeholder="••••••••"
                     autoComplete="new-password"
                     className="pr-10"
+                    {...register("confirmPassword")}  // 👈 conecta no form
                   />
 
                   <button
@@ -147,6 +198,11 @@ export default function RegisterForm() {
                     )}
                   </button>
                 </div>
+                {errors.confirmPassword && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
               </div>
 
               <Button
