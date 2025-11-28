@@ -58,7 +58,7 @@ export default function RegisterForm() {
         toast.error(response.message || "Erro ao criar conta. ER-03")
         return
       }
-
+      
     }catch(error){
       toast.error("Erro ao criar conta. ER-03")
       return

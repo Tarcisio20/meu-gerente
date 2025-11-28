@@ -57,17 +57,17 @@ export default function LoginForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await login({  email: data.login, password: data.password })
-      if(!response.success){
+      const response = await login({ email: data.login, password: data.password })
+      if (!response.success) {
         toast.error(response.message || "Erro ao fazer login. ER-04")
         return
       }
 
       toast.success(response.message || "Seja bem vindo!")
-      
+
       return
 
-    }catch(error){
+    } catch (error) {
       toast.error("Erro ao fazer login. ER-01")
       return
     }
@@ -167,7 +167,7 @@ export default function LoginForm() {
               </Button>
 
               <div className="text-xs text-muted-foreground text-right mt-1 cursor-pointer hover:underline">
-                Esqueci minha senha
+                <a href="/forgot-password">Esqueci minha senha</a>
               </div>
 
               {/* Separador */}
