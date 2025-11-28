@@ -1,7 +1,7 @@
 // app/layout.tsx
 import React from "react";
-import "./globals.css";
-import { ThemeProvider } from "@/app/components/theme-provider"; // ajuste o caminho se o theme-provider estiver em outro lugar
+import "@/app/globals.css"; // 👈 sem isso o Tailwind não entra!
+import { ThemeProvider } from "@/app/components/theme-provider"; // ajuste se seu theme-provider estiver em outro lugar
 
 type RootLayoutProps = {
   children: React.ReactNode;
@@ -10,6 +10,7 @@ type RootLayoutProps = {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
+      <head />
       <body className="min-h-screen bg-background text-foreground">
         <ThemeProvider
           attribute="class"
