@@ -15,7 +15,46 @@ import {
 } from "@/components/ui/card";
 import { ModeToggle } from "@/app/components/toggle-mode";
 
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { forgotPassword } from "@/app/service/auth";
+
+
+const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Informe seu e-mail")                // quando estiver vazio
+    .email("Informe um e-mail válido"),          // quando formato estiver errado
+});
+
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
 export default function ForgotPasswordForm() {
+
+    const { 
+        register, 
+        handleSubmit, 
+        formState: { errors, isSubmitting } 
+    } = useForm<ForgotPasswordFormData>({
+        resolver: zodResolver(forgotPasswordSchema),
+    });
+
+
+    const onSubmit = async (data: ForgotPasswordFormData) => {
+        try{
+            const response = await forgotPassword({ email: data.email })
+            if(!response.success){
+                toast.error(response.message || "Erro ao recuperar senha. ER-05")
+                return
+            }
+            
+        }catch(error){
+            toast.error("Erro ao recuperar senha. ER-05")
+        }
+    };
+
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-background relative px-4">
       {/* Toggle de tema no canto superior direito */}
@@ -39,7 +78,7 @@ export default function ForgotPasswordForm() {
 
         {/* Formulário de "Esqueci minha senha" */}
         <Card className="w-full shadow-lg border-border">
-          <form>
+          <form onSubmit={handleSubmit(onSubmit)} >
             <CardHeader className="space-y-2">
               <CardTitle className="text-2xl font-semibold tracking-tight">
                 Esqueci minha senha
@@ -58,7 +97,13 @@ export default function ForgotPasswordForm() {
                   type="email"
                   placeholder="seuemail@exemplo.com"
                   autoComplete="email"
+                  {...register("email")}
                 />
+                 {errors.email && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               <Button

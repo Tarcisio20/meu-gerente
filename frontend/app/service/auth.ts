@@ -73,3 +73,39 @@ export const register = async (data: { name: string, email: string, password: st
     }
   }
 }
+
+export const forgotPassword = async (data : { email: string }) => {
+   const base_url = process.env.NEXT_PUBLIC_BASE_URL
+  const complement_url = "/auth/forgot-password"
+  try {
+    const response = await axios.post(`${base_url}/${complement_url}`,
+      data,
+      {
+        headers: { "Content-Type": "application/json" },
+      });
+
+    return {
+      success: true,
+      data: response.data,
+      message: "Seja bem vindo!"
+    }
+  } catch (error: AxiosError | any) {
+    if (error.response) {
+      return {
+        success: false,
+        message: error.response.data
+      }
+    } else if (error.request) {
+      return {
+        success: false,
+        message: "Errode conexão. ER-02"
+      }
+    } else {
+      return {
+        success: false,
+        message: error.message
+      }
+
+    }
+  }
+}
